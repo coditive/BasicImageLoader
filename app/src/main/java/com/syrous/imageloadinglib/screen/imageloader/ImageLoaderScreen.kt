@@ -51,7 +51,7 @@ fun GridItem(photo: Photo, imageLoader: ImageLoader) {
 
         LaunchedEffect(photo.url) {
             withContext(Dispatchers.IO) {
-                bitmap.value = imageLoader.load(photo.url.regular).get(photo.url.regular)
+                bitmap.value = imageLoader.load(photo.url.regular).getAsync(photo.url.regular)
             }
         }
 

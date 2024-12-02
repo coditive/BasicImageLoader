@@ -9,5 +9,5 @@ interface ImageLoader {
 
     suspend fun load(url: String): ImageLoader
 
-    fun get(url: String): Bitmap?
+    suspend fun getAsync(url: String): Bitmap?
 }
