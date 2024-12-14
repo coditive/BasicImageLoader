@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.compose.ui.unit.IntSize
 import com.syrous.imageloadinglib.imageLoader.bitmap.LruBitmapPool
 import com.syrous.imageloadinglib.imageLoader.bitmap.UrlBitmapManager
 import kotlinx.coroutines.Deferred
@@ -23,6 +24,9 @@ class ImageLoaderImpl private constructor(private val builder: ImageLoaderBuilde
     private lateinit var lruBitmapPool: LruBitmapPool
     private lateinit var urlBitmapManager: UrlBitmapManager
     private var onGoingRequest: MutableMap<String, Deferred<Unit>> = ConcurrentHashMap()
+
+    private var targetWidth: Int? =  null
+    private var targetHeight: Int? =  null
 
     override fun with(context: Context): ImageLoader {
         lruBitmapPool = LruBitmapPool(context)
@@ -85,22 +89,40 @@ class ImageLoaderImpl private constructor(private val builder: ImageLoaderBuilde
                         BitmapFactory.decodeStream(reusableStream, null, options)
                     }
 
-                    if (bitmap == null || bitmap.width <= 0 || bitmap.height <= 0) {
+                    val scaledBitmap = scaleBitmapIfNeeded(bitmap)
+                    if (scaledBitmap == null || scaledBitmap.width <= 0 || scaledBitmap.height <= 0) {
                         throw IllegalArgumentException("Failed to decode bitmap")
                     }
-                    urlBitmapManager.putBitmapForUrl(url, bitmap) // Add to pool after usage
+                    urlBitmapManager.putBitmapForUrl(url, scaledBitmap) // Add to pool after usage
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         }
         onGoingRequest[url] = job
+        job.await()
+        onGoingRequest.remove(url)
+        return this
+    }
+
+    private fun scaleBitmapIfNeeded(bitmap: Bitmap?): Bitmap? {
+        if (bitmap == null || targetWidth == null || targetHeight == null) return bitmap
+        val aspectRatio = bitmap.width.toFloat() / bitmap.height.toFloat()
+
+        val scaledWidth = targetWidth!!
+        val scaledHeight = (targetWidth!! / aspectRatio).toInt()
+
+        return Bitmap.createScaledBitmap(bitmap, scaledWidth, scaledHeight, true)
+    }
+
+    override fun resolveSize(size: IntSize): ImageLoader {
+        targetWidth = size.width
+        targetHeight = size.height
         return this
     }
 
     override suspend fun getAsync(url: String): Bitmap? = coroutineScope {
-        val deferred = onGoingRequest[url]
-        deferred?.await()
+        onGoingRequest[url]?.let { it.await() }
         onGoingRequest.remove(url)
         urlBitmapManager.getBitmapForUrl(url)
     }
