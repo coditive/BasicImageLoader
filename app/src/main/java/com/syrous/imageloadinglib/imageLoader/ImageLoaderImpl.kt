@@ -35,10 +35,8 @@ class ImageLoaderImpl private constructor(private val builder: ImageLoaderBuilde
     }
 
     override suspend fun load(url: String): ImageLoader {
-        onGoingRequest[url]?.let {
-            it.await()
-            return this
-        }
+
+        onGoingRequest[url]?.cancel()
 
         val job = coroutineScope {
             async(Dispatchers.IO) {
@@ -96,12 +94,13 @@ class ImageLoaderImpl private constructor(private val builder: ImageLoaderBuilde
                     urlBitmapManager.putBitmapForUrl(url, scaledBitmap) // Add to pool after usage
                 } catch (e: Exception) {
                     e.printStackTrace()
+                } finally {
+                    onGoingRequest.remove(url)
                 }
             }
         }
         onGoingRequest[url] = job
-        job.await()
-        onGoingRequest.remove(url)
+        job.join()
         return this
     }
 
@@ -122,8 +121,7 @@ class ImageLoaderImpl private constructor(private val builder: ImageLoaderBuilde
     }
 
     override suspend fun getAsync(url: String): Bitmap? = coroutineScope {
-        onGoingRequest[url]?.let { it.await() }
-        onGoingRequest.remove(url)
+        onGoingRequest[url]?.join()
         urlBitmapManager.getBitmapForUrl(url)
     }
 
