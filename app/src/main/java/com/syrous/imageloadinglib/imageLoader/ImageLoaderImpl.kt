@@ -77,7 +77,6 @@ class ImageLoaderImpl private constructor(private val builder: ImageLoaderBuilde
                         options.apply {
                             inJustDecodeBounds = false
                             inMutable = true
-                            inSampleSize = inSampleSize
                             inBitmap = reusableBitmap // Use only if reusable bitmap is valid
                         }
                         BitmapFactory.decodeStream(reusableStream, null, options)
@@ -138,7 +137,7 @@ class ImageLoaderImpl private constructor(private val builder: ImageLoaderBuilde
 
         fun build(): ImageLoaderImpl {
             val client = OkHttpClient.Builder()
-                .cache(Cache(context.get()?.cacheDir!!, 10 * 1024))
+                .cache(Cache(context.get()?.cacheDir!!, 50L * 1024 * 1024))
                 .build()
             okHttpClient = client
             return ImageLoaderImpl(this)
