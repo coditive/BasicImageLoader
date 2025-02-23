@@ -6,7 +6,7 @@ interface BitmapPool {
 
     fun getCurrentMaxSize(): Int
 
-    fun getBitmap(width: Int, height: Int, config: Bitmap.Config): Bitmap
+    suspend fun getBitmap(width: Int, height: Int, config: Bitmap.Config): Bitmap
 
     fun getBitmap(key: BitmapKey): Bitmap
 

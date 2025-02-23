@@ -16,8 +16,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import com.syrous.imageloadinglib.data.response.Photo
 import com.syrous.imageloadinglib.imageLoader.ImageLoader
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 
 @Composable
@@ -31,11 +29,10 @@ fun ImageLoad(modifier: Modifier = Modifier, photo: Photo, imageLoader: ImageLoa
         val bitmap = remember { mutableStateOf<Bitmap?>(null) }
 
         LaunchedEffect(photo.url) {
-            withContext(Dispatchers.IO) {
-                imageSize?.let {
-                    bitmap.value = imageLoader.resolveSize(it).load(photo.url.regular)
-                        .getAsync(photo.url.regular)
-                }
+            imageSize?.let { size ->
+                val image = imageLoader.with(context).resolveSize(size).load(photo.url.regular)
+                    .getImageAsync()
+                bitmap.value = image
             }
         }
 

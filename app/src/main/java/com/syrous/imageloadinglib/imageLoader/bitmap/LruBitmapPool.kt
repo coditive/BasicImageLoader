@@ -2,6 +2,7 @@ package com.syrous.imageloadinglib.imageLoader.bitmap
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import java.lang.ref.WeakReference
 
 class LruBitmapPool(context: Context): BitmapPool {
@@ -26,12 +27,13 @@ class LruBitmapPool(context: Context): BitmapPool {
 
     private fun calculatePoolSize(context: Context): Int {
         val maxMemory = Runtime.getRuntime().maxMemory().toInt()
+        Log.d("LruBitmapPool", "pool size -> ${minOf(maxMemory / 4, 20 * 1024 * 1024)}")
         return minOf(maxMemory / 4, 20 * 1024 * 1024)
     }
 
     override fun getCurrentMaxSize(): Int = pool.size
 
-    override fun getBitmap(width: Int, height: Int, config: Bitmap.Config): Bitmap {
+    override suspend fun getBitmap(width: Int, height: Int, config: Bitmap.Config): Bitmap {
         val key = BitmapKey(width, height, config)
          return pool[key]?.get().also {
              hit++

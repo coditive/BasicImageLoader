@@ -13,9 +13,13 @@ class UrlBitmapManager(private val bitmapPool: BitmapPool) {
         }
     }
 
-    fun getBitmapForUrl(url: String, width: Int, height: Int, config: Config): Bitmap {
+    fun containsBitmapForUrl(url: String): Boolean {
+        return urlToBitmapMap[url] == null
+    }
+
+    suspend fun getBitmapForUrl(url: String, width: Int, height: Int, config: Config): Bitmap {
         val key = urlToBitmapMap[url]
-        return if(key != null) {
+        return if (key != null) {
             bitmapPool.getBitmap(width, height, config)
         } else {
             val bitmap = bitmapPool.getBitmap(width, height, config)
@@ -24,8 +28,12 @@ class UrlBitmapManager(private val bitmapPool: BitmapPool) {
         }
     }
 
-    fun getBitmapForUrl(url: String): Bitmap {
-        return bitmapPool.getBitmap(urlToBitmapMap[url]!!)
+    fun getBitmapForUrl(url: String): Bitmap? {
+        return if (urlToBitmapMap[url] == null) {
+            null
+        } else {
+            bitmapPool.getBitmap(urlToBitmapMap[url]!!)
+        }
     }
 
     fun putBitmapForUrl(url: String, bitmap: Bitmap) {
