@@ -111,11 +111,13 @@ class ImageLoaderImpl private constructor(private val builder: ImageLoaderBuilde
                 if (!response.isSuccessful) {
                     throw IOException("Unexpected HTTP response code: ${response.code}")
                 }
+
                 // Decode the response body as a Bitmap
                 val inputStream = response.body?.byteStream()
                 val byteArray =
                     inputStream?.readBytes() // Read the stream into a byte array
                 val reusableStream = ByteArrayInputStream(byteArray)
+
                 // Step 1: Decode the dimensions
                 val options = BitmapFactory.Options().apply {
                     inJustDecodeBounds = true

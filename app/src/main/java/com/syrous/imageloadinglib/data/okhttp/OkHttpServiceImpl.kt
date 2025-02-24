@@ -10,6 +10,11 @@ import okhttp3.Request
 import okhttp3.Response
 import okio.IOException
 
+
+/**
+ * This class was crated to eliminate unnecessary library to increase weight like retrofit for making api call
+ *
+ */
 class OkHttpServiceImpl private constructor(
     private val okHttpServiceBuilder: OkHttpServiceBuilder
 ) : OkHttpService {

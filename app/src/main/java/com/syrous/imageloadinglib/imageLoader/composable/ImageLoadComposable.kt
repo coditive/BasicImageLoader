@@ -18,6 +18,17 @@ import com.syrous.imageloadinglib.data.response.Photo
 import com.syrous.imageloadinglib.imageLoader.ImageLoader
 
 
+/**
+ *  There is also flaw in this implementation as well
+ *  1. It triggers the api request after url change which is on the user to handle correctly (Users should be tasked with
+ *  handling state of image loader)
+ *
+ *
+ *  Solution -
+ *  If we use compose inbuilt mechanism which removes element from UI tree, we can invalidate the call
+ *
+ */
+
 @Composable
 fun ImageLoad(modifier: Modifier = Modifier, photo: Photo, imageLoader: ImageLoader) {
     val context = LocalContext.current
